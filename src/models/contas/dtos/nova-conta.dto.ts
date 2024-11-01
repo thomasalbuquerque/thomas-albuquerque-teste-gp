@@ -1,7 +1,7 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty } from 'class-validator';
 
 export class NovaContaDto {
   @IsNotEmpty()
-  @IsString()
-  name!: string;
+  @IsInt()
+  numero!: number;
 }

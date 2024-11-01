@@ -10,17 +10,17 @@ export class ContasService {
   async criaConta(novaContaDto: NovaContaDto): Promise<ContaCriadaRetorno> {
     const existeConta = await this.prismaService.conta.findUnique({
       where: {
-        name: novaContaDto.name,
+        numero: novaContaDto.numero,
       },
     });
 
     if (existeConta) {
-      throw new ConflictException('Account already exists');
+      throw new ConflictException('Já existe uma conta com esse número');
     }
 
     const conta = await this.prismaService.conta.create({
       data: {
-        name: novaContaDto.name,
+        numero: novaContaDto.numero,
       },
     });
 

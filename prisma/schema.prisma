@@ -9,8 +9,8 @@ datasource db {
 
 model Conta {
   id        Int      @id @default(autoincrement())
-  name      String   @unique @db.VarChar(255)
-  balance   Decimal  @default(0) @db.Decimal(10, 2)
+  numero    Int      @unique
+  saldo     Decimal  @default(0) @db.Decimal(10, 2)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
