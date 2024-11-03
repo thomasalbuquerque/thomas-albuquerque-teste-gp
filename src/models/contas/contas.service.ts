@@ -4,6 +4,7 @@ import { PrismaService } from '@/infra/prisma/prisma.service';
 import { ContaCriadaRetorno } from './retornos/conta-criada.retorno';
 import { DepositoDto } from './dtos/deposito.dto';
 import { MensagemPresenter } from '@/common/retornos/mensagem.retorno';
+import { SaqueDto } from './dtos/saque.dto';
 
 @Injectable()
 export class ContasService {
@@ -43,5 +44,20 @@ export class ContasService {
     });
 
     return new MensagemPresenter('Depósito realizado com sucesso');
+  }
+
+  async saque(dto: SaqueDto) {
+    await this.prismaService.conta.update({
+      where: {
+        numero: dto.numero,
+      },
+      data: {
+        saldo: {
+          decrement: dto.valor,
+        },
+      },
+    });
+
+    return new MensagemPresenter('Saque realizado com sucesso');
   }
 }

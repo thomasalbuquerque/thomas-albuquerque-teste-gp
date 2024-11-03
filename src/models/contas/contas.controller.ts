@@ -3,6 +3,7 @@ import { ContasService } from '@/models/contas/contas.service';
 import { NovaContaDto } from '@/models/contas/dtos/nova-conta.dto';
 import { ContaCriadaRetorno } from '@/models/contas/retornos/conta-criada.retorno';
 import { DepositoDto } from './dtos/deposito.dto';
+import { SaqueDto } from './dtos/saque.dto';
 
 @Controller('contas')
 export class ContasController {
@@ -16,5 +17,10 @@ export class ContasController {
   @Post('deposito')
   deposito(@Body() depositoDto: DepositoDto): Promise<any> {
     return this.contasService.deposito(depositoDto);
+  }
+
+  @Post('saque')
+  saque(@Body() saqueDto: SaqueDto): Promise<any> {
+    return this.contasService.saque(saqueDto);
   }
 }
