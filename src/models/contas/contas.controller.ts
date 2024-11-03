@@ -1,14 +1,14 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { ContasService } from '@/models/contas/contas.service';
-import { NovaContaDto } from './dtos/nova-conta.dto';
-import { ContaCriadaRetorno } from './presenters/conta-criada.retorno';
+import { NovaContaDto } from '@/models/contas/dtos/nova-conta.dto';
+import { ContaCriadaRetorno } from '@/models/contas/presenters/conta-criada.retorno';
 
 @Controller('contas')
 export class ContasController {
-  constructor(private readonly accountService: ContasService) {}
+  constructor(private readonly contasService: ContasService) {}
 
   @Post()
   criaConta(@Body() novaContaDto: NovaContaDto): Promise<ContaCriadaRetorno> {
-    return this.accountService.criaConta(novaContaDto);
+    return this.contasService.criaConta(novaContaDto);
   }
 }

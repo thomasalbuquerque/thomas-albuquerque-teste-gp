@@ -21,6 +21,7 @@ export class ContasService {
     const conta = await this.prismaService.conta.create({
       data: {
         numero: novaContaDto.numero,
+        saldo: novaContaDto.saldo,
       },
     });
 
