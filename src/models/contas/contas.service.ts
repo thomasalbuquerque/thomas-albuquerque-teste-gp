@@ -1,7 +1,9 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { NovaContaDto } from '@/models/contas/dtos/nova-conta.dto';
 import { PrismaService } from '@/infra/prisma/prisma.service';
-import { ContaCriadaRetorno } from './presenters/conta-criada.retorno';
+import { ContaCriadaRetorno } from './retornos/conta-criada.retorno';
+import { DepositoDto } from './dtos/deposito.dto';
+import { MensagemPresenter } from '@/common/retornos/mensagem.retorno';
 
 @Injectable()
 export class ContasService {
@@ -26,5 +28,20 @@ export class ContasService {
     });
 
     return new ContaCriadaRetorno(conta);
+  }
+
+  async deposito(dto: DepositoDto) {
+    await this.prismaService.conta.update({
+      where: {
+        numero: dto.numero,
+      },
+      data: {
+        saldo: {
+          increment: dto.valor,
+        },
+      },
+    });
+
+    return new MensagemPresenter('Depósito realizado com sucesso');
   }
 }
