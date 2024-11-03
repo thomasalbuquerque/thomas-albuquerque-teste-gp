@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:16
+    container_name: teste-gp
+    platform: linux/x86_64
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: teste-gp
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    healthcheck:
+      test: ['CMD-SHELL', "sh -c 'pg_isready -U postgres -d teste-gp'"]
+      timeout: 10s
+      retries: 5
+    volumes:
+      - pg:/var/lib/postgresql/data
+    networks:
+      - teste-gp
+  queues:
+    image: redis:7
+    container_name: queues-teste-gp
+    platform: linux/x86_64
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - queues:/data
+    networks:
+      - teste-gp
+networks:
+  teste-gp:
+    driver: bridge
+
+volumes:
+  pg:
+  queues:
