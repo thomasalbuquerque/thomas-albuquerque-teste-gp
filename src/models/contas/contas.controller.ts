@@ -17,6 +17,11 @@ export class ContasController {
     return this.contasService.criaConta(novaContaDto);
   }
 
+  @Get(':numero')
+  encontraContaPeloNumero(@Param() params: NumeroParamDto): Promise<any> {
+    return this.contasService.encontraContaPeloNumero(+params.numero);
+  }
+
   @Post('deposito')
   criaDeposito(@Body() depositoDto: DepositoDto): Promise<any> {
     return this.contasService.criaDeposito(depositoDto);
@@ -45,11 +50,6 @@ export class ContasController {
   @Get('transferencia/:id')
   encontraTransferencia(@Param() params: IdParamDto): Promise<any> {
     return this.contasService.encontraTransferencia(+params.id);
-  }
-
-  @Get(':numero')
-  encontraContaPeloNumero(@Param() params: NumeroParamDto): Promise<any> {
-    return this.contasService.encontraContaPeloNumero(+params.numero);
   }
 
   @Get(':numero/saidas')

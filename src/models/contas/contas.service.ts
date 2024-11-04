@@ -52,6 +52,14 @@ export class ContasService {
     return new ContaRetorno(conta);
   }
 
+  async encontraContaPeloNumero(numero: number) {
+    return this.prismaService.conta.findUnique({
+      where: {
+        numero: numero,
+      },
+    });
+  }
+
   async criaDeposito(dto: DepositoDto) {
     const deposito = await this.prismaService.deposito.create({
       data: {
@@ -195,14 +203,6 @@ export class ContasService {
     }
 
     return new TransferenciaRetorno(transferencia);
-  }
-
-  async encontraContaPeloNumero(numero: number) {
-    return this.prismaService.conta.findUnique({
-      where: {
-        numero: numero,
-      },
-    });
   }
 
   async saidas(numero: number) {
