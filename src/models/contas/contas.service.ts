@@ -84,8 +84,53 @@ export class ContasService {
           },
         },
       }),
+      this.prismaService.transferencia.create({
+        data: {
+          valor: dto.valor,
+          contaOrigem: {
+            connect: {
+              numero: dto.origem,
+            },
+          },
+          contaDestino: {
+            connect: {
+              numero: dto.destino,
+            },
+          },
+        },
+      }),
     ]);
 
     return new MensagemPresenter('Transferência realizada com sucesso');
+  }
+
+  async encontraContaPeloNumero(numero: number) {
+    return this.prismaService.conta.findUnique({
+      where: {
+        numero: numero,
+      },
+    });
+  }
+
+  async saidas(numero: number) {
+    return this.prismaService.conta.findUnique({
+      where: {
+        numero: numero,
+      },
+      include: {
+        transferenciasDeSaida: true,
+      },
+    });
+  }
+
+  async entradas(numero: number) {
+    return this.prismaService.conta.findUnique({
+      where: {
+        numero: numero,
+      },
+      include: {
+        transferenciasDeEntrada: true,
+      },
+    });
   }
 }
