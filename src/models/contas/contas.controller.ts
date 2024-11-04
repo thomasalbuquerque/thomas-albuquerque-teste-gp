@@ -6,6 +6,7 @@ import { DepositoDto } from './dtos/deposito.dto';
 import { SaqueDto } from './dtos/saque.dto';
 import { TransferenciaDto } from './dtos/transferencia.dto';
 import { NumeroParamDto } from './dtos/numero-param.dto';
+import { IdParamDto } from './dtos/id-param.dto';
 
 @Controller('contas')
 export class ContasController {
@@ -17,8 +18,13 @@ export class ContasController {
   }
 
   @Post('deposito')
-  deposito(@Body() depositoDto: DepositoDto): Promise<any> {
-    return this.contasService.deposito(depositoDto);
+  criaDeposito(@Body() depositoDto: DepositoDto): Promise<any> {
+    return this.contasService.criaDeposito(depositoDto);
+  }
+
+  @Get('deposito/:id')
+  encontraDeposito(@Param() params: IdParamDto): Promise<any> {
+    return this.contasService.encontraDeposito(+params.id);
   }
 
   @Post('saque')

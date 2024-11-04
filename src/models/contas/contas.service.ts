@@ -6,10 +6,16 @@ import { DepositoDto } from './dtos/deposito.dto';
 import { MensagemPresenter } from '@/common/retornos/mensagem.retorno';
 import { SaqueDto } from './dtos/saque.dto';
 import { TransferenciaDto } from './dtos/transferencia.dto';
+import { DepositoProdutor } from './produtores/deposito.produtor';
+import { DepositoStatus } from '@prisma/client';
+import { DepositoRetorno } from './retornos/deposito.retorno';
 
 @Injectable()
 export class ContasService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly depositoProdutor: DepositoProdutor,
+  ) {}
 
   async criaConta(novaContaDto: NovaContaDto): Promise<ContaCriadaRetorno> {
     const existeConta = await this.prismaService.conta.findUnique({
@@ -32,19 +38,38 @@ export class ContasService {
     return new ContaCriadaRetorno(conta);
   }
 
-  async deposito(dto: DepositoDto) {
-    await this.prismaService.conta.update({
-      where: {
-        numero: dto.numero,
-      },
+  async criaDeposito(dto: DepositoDto) {
+    const deposito = await this.prismaService.deposito.create({
       data: {
-        saldo: {
-          increment: dto.valor,
+        conta: {
+          connect: {
+            numero: dto.numero,
+          },
         },
+        valor: dto.valor,
+        status: DepositoStatus.PENDENTE,
       },
     });
 
-    return new MensagemPresenter('Depósito realizado com sucesso');
+    await this.depositoProdutor.add({
+      depositoId: deposito.id,
+    });
+
+    return new DepositoRetorno(deposito);
+  }
+
+  async encontraDeposito(id: number) {
+    const deposito = await this.prismaService.deposito.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!deposito) {
+      throw new ConflictException('Depósito não encontrado');
+    }
+
+    return new DepositoRetorno(deposito);
   }
 
   async saque(dto: SaqueDto) {
