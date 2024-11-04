@@ -38,8 +38,13 @@ export class ContasController {
   }
 
   @Post('transferencia')
-  transferencia(@Body() transferenciaDto: TransferenciaDto): Promise<any> {
-    return this.contasService.transferencia(transferenciaDto);
+  criaTransferencia(@Body() transferenciaDto: TransferenciaDto): Promise<any> {
+    return this.contasService.criaTransferencia(transferenciaDto);
+  }
+
+  @Get('transferencia/:id')
+  encontraTransferencia(@Param() params: IdParamDto): Promise<any> {
+    return this.contasService.encontraTransferencia(+params.id);
   }
 
   @Get(':numero')

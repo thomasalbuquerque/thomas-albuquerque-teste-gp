@@ -8,11 +8,17 @@ import { DepositoProdutor } from './produtores/deposito.produtor';
 import { DepositoConsumidor } from './consumidores/deposito.consumidor';
 import { SaqueProdutor } from './produtores/saque.produtor';
 import { SaqueConsumidor } from './consumidores/saque.consumidor';
+import { TransferenciaProdutor } from './produtores/transferencia.produtor';
+import { TransferenciaConsumidor } from './consumidores/transferencia.consumidor';
 
 @Module({
   imports: [
     PrismaModule,
-    BullModule.registerQueue({ name: Queues.DEPOSITO }, { name: Queues.SAQUE }),
+    BullModule.registerQueue(
+      { name: Queues.DEPOSITO },
+      { name: Queues.SAQUE },
+      { name: Queues.TRANSFERENCIA },
+    ),
   ],
   controllers: [ContasController],
   providers: [
@@ -21,6 +27,8 @@ import { SaqueConsumidor } from './consumidores/saque.consumidor';
     DepositoConsumidor,
     SaqueProdutor,
     SaqueConsumidor,
+    TransferenciaProdutor,
+    TransferenciaConsumidor,
   ],
 })
 export class ContasModule {}
