@@ -1,12 +1,12 @@
 services:
   db:
     image: postgres:16
-    container_name: teste-gp
+    container_name: db-teste-gp
     platform: linux/x86_64
     ports:
       - 5432:5432
     environment:
-      POSTGRES_DB: teste-gp
+      POSTGRES_DB: db-teste-gp
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     healthcheck:
