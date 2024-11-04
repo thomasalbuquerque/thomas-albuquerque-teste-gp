@@ -28,8 +28,13 @@ export class ContasController {
   }
 
   @Post('saque')
-  saque(@Body() saqueDto: SaqueDto): Promise<any> {
-    return this.contasService.saque(saqueDto);
+  criaSaque(@Body() saqueDto: SaqueDto): Promise<any> {
+    return this.contasService.criaSaque(saqueDto);
+  }
+
+  @Get('saque/:id')
+  encontraSaque(@Param() params: IdParamDto): Promise<any> {
+    return this.contasService.encontraSaque(+params.id);
   }
 
   @Post('transferencia')

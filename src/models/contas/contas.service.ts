@@ -7,14 +7,21 @@ import { MensagemPresenter } from '@/common/retornos/mensagem.retorno';
 import { SaqueDto } from './dtos/saque.dto';
 import { TransferenciaDto } from './dtos/transferencia.dto';
 import { DepositoProdutor } from './produtores/deposito.produtor';
-import { DepositoStatus } from '@prisma/client';
+import {
+  DepositoStatus,
+  SaqueStatus,
+  TransferenciaStatus,
+} from '@prisma/client';
 import { DepositoRetorno } from './retornos/deposito.retorno';
+import { SaqueProdutor } from './produtores/saque.produtor';
+import { SaqueRetorno } from './retornos/saque.retorno';
 
 @Injectable()
 export class ContasService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly depositoProdutor: DepositoProdutor,
+    private readonly saqueProdutor: SaqueProdutor,
   ) {}
 
   async criaConta(novaContaDto: NovaContaDto): Promise<ContaCriadaRetorno> {
@@ -72,19 +79,38 @@ export class ContasService {
     return new DepositoRetorno(deposito);
   }
 
-  async saque(dto: SaqueDto) {
-    await this.prismaService.conta.update({
-      where: {
-        numero: dto.numero,
-      },
+  async criaSaque(dto: SaqueDto) {
+    const saque = await this.prismaService.saque.create({
       data: {
-        saldo: {
-          decrement: dto.valor,
+        conta: {
+          connect: {
+            numero: dto.numero,
+          },
         },
+        valor: dto.valor,
+        status: SaqueStatus.PENDENTE,
       },
     });
 
-    return new MensagemPresenter('Saque realizado com sucesso');
+    await this.saqueProdutor.add({
+      saqueId: saque.id,
+    });
+
+    return new SaqueRetorno(saque);
+  }
+
+  async encontraSaque(id: number) {
+    const saque = await this.prismaService.saque.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!saque) {
+      throw new ConflictException('Saque não encontrado');
+    }
+
+    return new SaqueRetorno(saque);
   }
 
   async transferencia(dto: TransferenciaDto) {
@@ -122,6 +148,7 @@ export class ContasService {
               numero: dto.destino,
             },
           },
+          status: TransferenciaStatus.PENDENTE,
         },
       }),
     ]);

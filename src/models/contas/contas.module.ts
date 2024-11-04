@@ -6,10 +6,21 @@ import { BullModule } from '@nestjs/bull';
 import { Queues } from '@/common/queues/queues.enum';
 import { DepositoProdutor } from './produtores/deposito.produtor';
 import { DepositoConsumidor } from './consumidores/deposito.consumidor';
+import { SaqueProdutor } from './produtores/saque.produtor';
+import { SaqueConsumidor } from './consumidores/saque.consumidor';
 
 @Module({
-  imports: [PrismaModule, BullModule.registerQueue({ name: Queues.DEPOSITO })],
+  imports: [
+    PrismaModule,
+    BullModule.registerQueue({ name: Queues.DEPOSITO }, { name: Queues.SAQUE }),
+  ],
   controllers: [ContasController],
-  providers: [ContasService, DepositoProdutor, DepositoConsumidor],
+  providers: [
+    ContasService,
+    DepositoProdutor,
+    DepositoConsumidor,
+    SaqueProdutor,
+    SaqueConsumidor,
+  ],
 })
 export class ContasModule {}
