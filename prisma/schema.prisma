@@ -40,24 +40,31 @@ enum DepositoStatus {
 }
 
 model Saque {
-  id        Int      @id @default(autoincrement())
-  valor     Decimal  @db.Decimal(10, 2)
+  id        Int         @id @default(autoincrement())
+  valor     Decimal     @db.Decimal(10, 2)
   contaId   Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status    SaqueStatus
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 
   conta Conta @relation(fields: [contaId], references: [id])
 
   @@map("saques")
 }
 
+enum SaqueStatus {
+  PENDENTE
+  CONCLUIDO
+}
+
 model Transferencia {
-  id             Int      @id @default(autoincrement())
-  valor          Decimal  @db.Decimal(10, 2)
+  id             Int                 @id @default(autoincrement())
+  valor          Decimal             @db.Decimal(10, 2)
   contaOrigemId  Int
   contaDestinoId Int
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  status         TransferenciaStatus
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
 
   contaOrigem  Conta @relation("origem", fields: [contaOrigemId], references: [id])
   contaDestino Conta @relation("destino", fields: [contaDestinoId], references: [id])
@@ -69,4 +76,9 @@ enum TipoTransacao {
   DEPOSITO
   SAQUE
   TRANSFERENCIA
+}
+
+enum TransferenciaStatus {
+  PENDENTE
+  CONCLUIDO
 }
