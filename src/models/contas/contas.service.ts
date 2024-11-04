@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { NovaContaDto } from '@/models/contas/dtos/nova-conta.dto';
 import { PrismaService } from '@/infra/prisma/prisma.service';
-import { ContaCriadaRetorno } from './retornos/conta-criada.retorno';
+import { ContaRetorno } from './retornos/conta.retorno';
 import { DepositoDto } from './dtos/deposito.dto';
 import { SaqueDto } from './dtos/saque.dto';
 import { TransferenciaDto } from './dtos/transferencia.dto';
@@ -31,7 +31,7 @@ export class ContasService {
     private readonly transferenciaProdutor: TransferenciaProdutor,
   ) {}
 
-  async criaConta(novaContaDto: NovaContaDto): Promise<ContaCriadaRetorno> {
+  async criaConta(novaContaDto: NovaContaDto): Promise<ContaRetorno> {
     const existeConta = await this.prismaService.conta.findUnique({
       where: {
         numero: novaContaDto.numero,
@@ -49,7 +49,7 @@ export class ContasService {
       },
     });
 
-    return new ContaCriadaRetorno(conta);
+    return new ContaRetorno(conta);
   }
 
   async criaDeposito(dto: DepositoDto) {
@@ -206,7 +206,7 @@ export class ContasService {
   }
 
   async saidas(numero: number) {
-    return this.prismaService.conta.findUnique({
+    const contaEsaidas = await this.prismaService.conta.findUnique({
       where: {
         numero: numero,
       },
@@ -214,10 +214,12 @@ export class ContasService {
         transferenciasDeSaida: true,
       },
     });
+
+    return new ContaRetorno(contaEsaidas);
   }
 
   async entradas(numero: number) {
-    return this.prismaService.conta.findUnique({
+    const contaEentradas = await this.prismaService.conta.findUnique({
       where: {
         numero: numero,
       },
@@ -225,5 +227,7 @@ export class ContasService {
         transferenciasDeEntrada: true,
       },
     });
+
+    return new ContaRetorno(contaEentradas);
   }
 }

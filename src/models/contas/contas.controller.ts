@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ContasService } from '@/models/contas/contas.service';
 import { NovaContaDto } from '@/models/contas/dtos/nova-conta.dto';
-import { ContaCriadaRetorno } from '@/models/contas/retornos/conta-criada.retorno';
+import { ContaRetorno } from '@/models/contas/retornos/conta.retorno';
 import { DepositoDto } from './dtos/deposito.dto';
 import { SaqueDto } from './dtos/saque.dto';
 import { TransferenciaDto } from './dtos/transferencia.dto';
@@ -13,7 +13,7 @@ export class ContasController {
   constructor(private readonly contasService: ContasService) {}
 
   @Post()
-  criaConta(@Body() novaContaDto: NovaContaDto): Promise<ContaCriadaRetorno> {
+  criaConta(@Body() novaContaDto: NovaContaDto): Promise<ContaRetorno> {
     return this.contasService.criaConta(novaContaDto);
   }
 
