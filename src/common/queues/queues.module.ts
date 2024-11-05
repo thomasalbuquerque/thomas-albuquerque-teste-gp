@@ -4,7 +4,7 @@ import { BullBoardModule } from '@bull-board/nestjs';
 import { ExpressAdapter } from '@bull-board/express';
 import { BullAdapter } from '@bull-board/api/bullAdapter';
 import { Queues } from '@/common/queues/queues.enum';
-import basicAuth from 'express-basic-auth';
+import * as basicAuth from 'express-basic-auth';
 
 @Module({
   imports: [

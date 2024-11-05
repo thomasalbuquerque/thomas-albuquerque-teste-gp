@@ -8,68 +8,31 @@ datasource db {
 }
 
 model Conta {
-  id                      Int             @id @default(autoincrement())
-  numero                  Int             @unique
-  saldo                   Decimal         @default(0) @db.Decimal(10, 2)
-  createdAt               DateTime        @default(now())
-  updatedAt               DateTime        @updatedAt
-  depositos               Deposito[]
-  saques                  Saque[]
-  transferenciasDeEntrada Transferencia[] @relation("destino")
-  transferenciasDeSaida   Transferencia[] @relation("origem")
+  id                  Int         @id @default(autoincrement())
+  numero              Int         @unique
+  saldo               Decimal     @default(0) @db.Decimal(10, 2)
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  transacoesDeEntrada Transacao[] @relation("destino")
+  transacosDeSaida    Transacao[] @relation("origem")
 
   @@map("contas")
 }
 
-model Deposito {
-  id        Int            @id @default(autoincrement())
-  valor     Decimal        @db.Decimal(10, 2)
-  contaId   Int
-  status    DepositoStatus
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-
-  conta Conta @relation(fields: [contaId], references: [id])
-
-  @@map("depositos")
-}
-
-enum DepositoStatus {
-  PENDENTE
-  CONCLUIDO
-}
-
-model Saque {
-  id        Int         @id @default(autoincrement())
-  valor     Decimal     @db.Decimal(10, 2)
-  contaId   Int
-  status    SaqueStatus
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-
-  conta Conta @relation(fields: [contaId], references: [id])
-
-  @@map("saques")
-}
-
-enum SaqueStatus {
-  PENDENTE
-  CONCLUIDO
-}
-
-model Transferencia {
-  id             Int                 @id @default(autoincrement())
-  valor          Decimal             @db.Decimal(10, 2)
+model Transacao {
+  id             Int             @id @default(autoincrement())
+  valor          Decimal         @db.Decimal(10, 2)
+  tipo           TipoTransacao
+  status         StatusTransacao
   contaOrigemId  Int
-  contaDestinoId Int
-  status         TransferenciaStatus
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
+  contaDestinoId Int?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
-  contaOrigem  Conta @relation("origem", fields: [contaOrigemId], references: [id])
-  contaDestino Conta @relation("destino", fields: [contaDestinoId], references: [id])
+  contaOrigem  Conta  @relation("origem", fields: [contaOrigemId], references: [id])
+  contaDestino Conta? @relation("destino", fields: [contaDestinoId], references: [id])
 
-  @@map("transferencias")
+  @@map("transacoes")
 }
 
 enum TipoTransacao {
@@ -78,7 +41,7 @@ enum TipoTransacao {
   TRANSFERENCIA
 }
 
-enum TransferenciaStatus {
+enum StatusTransacao {
   PENDENTE
   CONCLUIDO
 }

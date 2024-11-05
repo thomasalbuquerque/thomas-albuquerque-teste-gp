@@ -1,9 +1,9 @@
-import { Conta, Transferencia } from '@prisma/client';
-import { TransferenciaRetorno } from './transferencia.retorno';
+import { Conta, Transacao } from '@prisma/client';
+import { TransacaoRetorno } from './transacao.retorno';
 
 type ContaCriadaRetornoProps = Conta & {
-  transferenciasDeSaida?: Transferencia[];
-  transferenciasDeEntrada?: Transferencia[];
+  transacosDeSaida?: Transacao[];
+  transacoesDeEntrada?: Transacao[];
 };
 
 export class ContaRetorno {
@@ -12,8 +12,8 @@ export class ContaRetorno {
   saldo: number;
   createdAt: Date;
   updatedAt: Date;
-  transferenciasDeSaida?: TransferenciaRetorno[];
-  transferenciasDeEntrada?: TransferenciaRetorno[];
+  transacoesDeSaida?: TransacaoRetorno[];
+  transacoesDeEntrada?: TransacaoRetorno[];
 
   constructor(props: ContaCriadaRetornoProps) {
     this.id = props.id;
@@ -21,15 +21,19 @@ export class ContaRetorno {
     this.saldo = props.saldo.toNumber();
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
-    this.transferenciasDeSaida = props.transferenciasDeSaida
-      ? props.transferenciasDeSaida.map(
-          (transferencia) => new TransferenciaRetorno(transferencia),
-        )
+    this.transacoesDeSaida = props.transacosDeSaida
+      ? props.transacosDeSaida.length > 0
+        ? props.transacosDeSaida.map(
+            (transacao) => new TransacaoRetorno(transacao),
+          )
+        : undefined
       : undefined;
-    this.transferenciasDeEntrada = props.transferenciasDeEntrada
-      ? props.transferenciasDeEntrada.map(
-          (transferencia) => new TransferenciaRetorno(transferencia),
-        )
+    this.transacoesDeEntrada = props.transacoesDeEntrada
+      ? props.transacoesDeEntrada.length > 0
+        ? props.transacoesDeEntrada.map(
+            (transacao) => new TransacaoRetorno(transacao),
+          )
+        : undefined
       : undefined;
   }
 }

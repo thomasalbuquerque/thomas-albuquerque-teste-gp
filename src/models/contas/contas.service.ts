@@ -6,29 +6,19 @@ import {
 } from '@nestjs/common';
 import { NovaContaDto } from '@/models/contas/dtos/nova-conta.dto';
 import { PrismaService } from '@/infra/prisma/prisma.service';
-import { ContaRetorno } from './retornos/conta.retorno';
 import { DepositoDto } from './dtos/deposito.dto';
 import { SaqueDto } from './dtos/saque.dto';
 import { TransferenciaDto } from './dtos/transferencia.dto';
-import { DepositoProdutor } from './produtores/deposito.produtor';
-import {
-  DepositoStatus,
-  SaqueStatus,
-  TransferenciaStatus,
-} from '@prisma/client';
-import { DepositoRetorno } from './retornos/deposito.retorno';
-import { SaqueProdutor } from './produtores/saque.produtor';
-import { SaqueRetorno } from './retornos/saque.retorno';
-import { TransferenciaProdutor } from './produtores/transferencia.produtor';
-import { TransferenciaRetorno } from './retornos/transferencia.retorno';
+import { TransacaoProdutor } from './produtores/transacao.produtor';
+import { StatusTransacao, TipoTransacao } from '@prisma/client';
+import { TransacaoRetorno } from './retornos/transacao.retorno';
+import { ContaRetorno } from './retornos/conta.retorno';
 
 @Injectable()
 export class ContasService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly depositoProdutor: DepositoProdutor,
-    private readonly saqueProdutor: SaqueProdutor,
-    private readonly transferenciaProdutor: TransferenciaProdutor,
+    private readonly transacaoProdutor: TransacaoProdutor,
   ) {}
 
   async criaConta(novaContaDto: NovaContaDto): Promise<ContaRetorno> {
@@ -53,37 +43,61 @@ export class ContasService {
   }
 
   async encontraContaPeloNumero(numero: number) {
-    return this.prismaService.conta.findUnique({
+    const conta = await this.prismaService.conta.findUnique({
       where: {
         numero: numero,
       },
     });
+
+    if (!conta) {
+      throw new NotFoundException('Conta não encontrada');
+    }
+
+    return new ContaRetorno(conta);
   }
 
   async criaDeposito(dto: DepositoDto) {
-    const deposito = await this.prismaService.deposito.create({
+    const conta = await this.prismaService.conta.findUnique({
+      where: {
+        numero: dto.numero,
+      },
+    });
+
+    if (!conta) {
+      throw new NotFoundException('Conta não encontrada');
+    }
+
+    const deposito = await this.prismaService.transacao.create({
       data: {
-        conta: {
+        contaOrigem: {
           connect: {
             numero: dto.numero,
           },
         },
         valor: dto.valor,
-        status: DepositoStatus.PENDENTE,
+        tipo: TipoTransacao.DEPOSITO,
+        status: StatusTransacao.PENDENTE,
+      },
+      include: {
+        contaOrigem: true,
       },
     });
 
-    await this.depositoProdutor.add({
+    await this.transacaoProdutor.addDepositoJob({
       depositoId: deposito.id,
     });
 
-    return new DepositoRetorno(deposito);
+    return new TransacaoRetorno(deposito);
   }
 
   async encontraDeposito(id: number) {
-    const deposito = await this.prismaService.deposito.findUnique({
+    const deposito = await this.prismaService.transacao.findUnique({
       where: {
-        id: id,
+        id,
+        tipo: TipoTransacao.DEPOSITO,
+      },
+      include: {
+        contaOrigem: true,
       },
     });
 
@@ -91,7 +105,7 @@ export class ContasService {
       throw new NotFoundException('Depósito não encontrado');
     }
 
-    return new DepositoRetorno(deposito);
+    return new TransacaoRetorno(deposito);
   }
 
   async criaSaque(dto: SaqueDto) {
@@ -109,29 +123,31 @@ export class ContasService {
       throw new BadRequestException('Saldo insuficiente');
     }
 
-    const saque = await this.prismaService.saque.create({
+    const saque = await this.prismaService.transacao.create({
       data: {
-        conta: {
+        contaOrigem: {
           connect: {
             numero: dto.numero,
           },
         },
         valor: dto.valor,
-        status: SaqueStatus.PENDENTE,
+        tipo: TipoTransacao.SAQUE,
+        status: StatusTransacao.PENDENTE,
       },
     });
 
-    await this.saqueProdutor.add({
+    await this.transacaoProdutor.addSaqueJob({
       saqueId: saque.id,
     });
 
-    return new SaqueRetorno(saque);
+    return new TransacaoRetorno(saque);
   }
 
   async encontraSaque(id: number) {
-    const saque = await this.prismaService.saque.findUnique({
+    const saque = await this.prismaService.transacao.findUnique({
       where: {
-        id: id,
+        id,
+        tipo: TipoTransacao.SAQUE,
       },
     });
 
@@ -139,7 +155,7 @@ export class ContasService {
       throw new NotFoundException('Saque não encontrado');
     }
 
-    return new SaqueRetorno(saque);
+    return new TransacaoRetorno(saque);
   }
 
   async criaTransferencia(dto: TransferenciaDto) {
@@ -167,9 +183,8 @@ export class ContasService {
       throw new NotFoundException('Conta de destino não encontrada');
     }
 
-    const transferencia = await this.prismaService.transferencia.create({
+    const transferencia = await this.prismaService.transacao.create({
       data: {
-        valor: dto.valor,
         contaOrigem: {
           connect: {
             numero: dto.origem,
@@ -180,21 +195,32 @@ export class ContasService {
             numero: dto.destino,
           },
         },
-        status: TransferenciaStatus.PENDENTE,
+        valor: dto.valor,
+        tipo: TipoTransacao.TRANSFERENCIA,
+        status: StatusTransacao.PENDENTE,
+      },
+      include: {
+        contaOrigem: true,
+        contaDestino: true,
       },
     });
 
-    await this.transferenciaProdutor.add({
+    await this.transacaoProdutor.addTransferenciaJob({
       transferenciaId: transferencia.id,
     });
 
-    return new TransferenciaRetorno(transferencia);
+    return new TransacaoRetorno(transferencia);
   }
 
   async encontraTransferencia(id: number) {
-    const transferencia = await this.prismaService.transferencia.findUnique({
+    const transferencia = await this.prismaService.transacao.findUnique({
       where: {
-        id: id,
+        id,
+        tipo: TipoTransacao.TRANSFERENCIA,
+      },
+      include: {
+        contaOrigem: true,
+        contaDestino: true,
       },
     });
 
@@ -202,7 +228,7 @@ export class ContasService {
       throw new NotFoundException('Transferência não encontrada');
     }
 
-    return new TransferenciaRetorno(transferencia);
+    return new TransacaoRetorno(transferencia);
   }
 
   async saidas(numero: number) {
@@ -211,7 +237,7 @@ export class ContasService {
         numero: numero,
       },
       include: {
-        transferenciasDeSaida: true,
+        transacosDeSaida: true,
       },
     });
 
@@ -224,7 +250,7 @@ export class ContasService {
         numero: numero,
       },
       include: {
-        transferenciasDeEntrada: true,
+        transacoesDeEntrada: true,
       },
     });
 
